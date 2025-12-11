@@ -20,21 +20,33 @@ struct ShopView: View {
         GridItem(.flexible(), spacing: 16)
     ]
     
-    // Sample shop items
+    // Shop items
     let shopItems = [
-        ShopItem(imageName: "tshirt.fill", name: "Vittcoin T-Shirt", price: 500),
-        ShopItem(imageName: "cup.and.saucer.fill", name: "Coffee Mug", price: 250),
-        ShopItem(imageName: "headphones", name: "Headphones", price: 1000),
-        ShopItem(imageName: "figure.walk", name: "Fitness Tracker", price: 750),
-        ShopItem(imageName: "book.fill", name: "Notebook", price: 200),
-        ShopItem(imageName: "pencil.and.outline", name: "Pen Set", price: 150),
-        ShopItem(imageName: "backpack.fill", name: "Backpack", price: 800),
-        ShopItem(imageName: "waterbottle.fill", name: "Water Bottle", price: 300),
+        ShopItem(imageName: "theatermasks.fill", name: "Letterman Jacket", price: 2000),
+        ShopItem(imageName: "tshirt.fill", name: "TLL Shirt", price: 800),
+        ShopItem(imageName: "book.fill", name: "Notebook", price: 300),
+        ShopItem(imageName: "backpack.fill", name: "Backpack", price: 1200),
+        ShopItem(imageName: "waterbottle.fill", name: "Water Bottle", price: 400),
+        ShopItem(imageName: "cup.and.saucer.fill", name: "Mug", price: 500),
+        ShopItem(imageName: "tshirt", name: "School Designed by a Freak Shirt", price: 900),
+        ShopItem(imageName: "bed.double.fill", name: "Fuzzy Socks", price: 600),
+        ShopItem(imageName: "carrot.fill", name: "Snack Level 1", price: 250),
+        ShopItem(imageName: "birthday.cake.fill", name: "Snack Level 2", price: 500),
+        ShopItem(imageName: "fork.knife", name: "1-1 Meal with Steve", price: 3000),
+        ShopItem(imageName: "chart.pie.fill", name: "Pie Steve", price: 1500),
+        ShopItem(imageName: "figure.walk.departure", name: "Field Trip of Your Choice", price: 5000),
     ]
     
     var body: some View {
         NavigationView {
             ScrollView {
+                Text("Shop")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    .padding(.top)
+
                 LazyVGrid(columns: columns, spacing: 20) {
                     ForEach(shopItems) { item in
                         VStack(alignment: .leading, spacing: 8) {
@@ -46,7 +58,7 @@ struct ShopView: View {
                                 
                                 Image(systemName: item.imageName)
                                     .font(.system(size: 50))
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.vittPrimary)
                             }
                             
                             // Item name (left justified)
@@ -67,7 +79,7 @@ struct ShopView: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
             }
-            .navigationTitle("Shop")
+            .navigationBarHidden(true)
         }
     }
 }

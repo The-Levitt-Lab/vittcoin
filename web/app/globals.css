@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #071535;
+  --primary: #4514c7;
+  --secondary: #c200d5;
+  --accent: #071535;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* For now, keeping the same palette or close to it, or strictly following the requested palette */
+    /* The user asked for "the color palette", suggesting uniformity. */
+    /* If dark mode is strictly enforced, we might want to invert some, but for now I'll respect the explicit white background if possible, or adapt. */
+    /* Given the prompt "ffffff for the background white", I'll set the background to white even in dark mode or just remove dark mode override for these colors to ensure consistency with the request. */
+    /* However, mobile apps often have dark mode. I'll set a dark background that isn't pure black if I must, or just use the dark blue provided. */
+    --background: #071535; /* Using the dark blue as background in dark mode? Or stick to white? User said "ffffff for the background white". I'll default to the requested palette which seems light-mode centric. */
+    /* Actually, often users want a dark mode. The provided palette has a dark blue #071535. I'll use that as background for dark mode and white for text? */
+    /* But to be safe and strictly follow "ffffff for the background white", I will set it for :root and maybe let dark mode be the dark blue. */
+    /* Let's look at the requested palette:
+       #4514C7 (Purple)
+       #c200D5 (Magenta)
+       #071535 (Dark Blue)
+       #FFFFFF (White)
+    */
+    /* I'll configure dark mode to use the dark blue as background and white as text. */
+    --background: #071535;
+    --foreground: #ffffff;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}

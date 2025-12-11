@@ -13,7 +13,7 @@ struct ChallengesView: View {
             VStack(spacing: 20) {
                 Image(systemName: "medal.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(.orange)
+                    .foregroundColor(.vittSecondary)
                 
                 Text("Challenges")
                     .font(.title)
@@ -23,7 +23,7 @@ struct ChallengesView: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
-            .navigationTitle("Challenges")
+            .navigationBarHidden(true)
         }
     }
 }

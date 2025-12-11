@@ -115,7 +115,7 @@ struct StandingView: View {
                             )
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [.green, .green.opacity(0.7)],
+                                    colors: [.vittPrimary, .vittPrimary.opacity(0.7)],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -128,7 +128,7 @@ struct StandingView: View {
                             )
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [.green.opacity(0.3), .green.opacity(0.05)],
+                                    colors: [.vittPrimary.opacity(0.3), .vittPrimary.opacity(0.05)],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )
@@ -172,8 +172,7 @@ struct StandingView: View {
                 }
                 .padding(.bottom)
             }
-            .navigationTitle("Standing")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarHidden(true)
         }
     }
 }
