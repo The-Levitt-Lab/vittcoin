@@ -40,9 +40,14 @@ struct VitmoView: View {
             VStack(spacing: 20) {
                 // User Name in upper left
                 HStack {
-                    Text("Ben Klosky")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Ben Klosky")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("@ben.klosky")
+                            .font(.system(size: 16))
+                            .foregroundColor(.white.opacity(0.9))
+                    }
                     Spacer()
                 }
                 .padding(.leading, 20)
