@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VitmoView: View {
     @State private var recipient: String = ""
+    @State private var selectedContact: String?
     
     // Dummy data for the list
     let contacts = [
@@ -18,11 +19,7 @@ struct VitmoView: View {
     ]
     
     var filteredContacts: [String] {
-        if recipient.isEmpty {
-            return contacts
-        } else {
-            return contacts.filter { $0.localizedCaseInsensitiveContains(recipient) }
-        }
+        FuzzyMatcher.search(query: recipient, in: contacts)
     }
     
     var body: some View {
@@ -58,7 +55,13 @@ struct VitmoView: View {
                                 
                 VStack(alignment: .leading, spacing: 10) {
                     TextField("@username", text: $recipient)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .background(Color.white)
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                        )
                         .autocapitalization(.none)
                 }
                 .padding(.horizontal)
@@ -66,28 +69,53 @@ struct VitmoView: View {
                 
                 // Scrollable list of people
                 List(filteredContacts, id: \.self) { contact in
-                    HStack(spacing: 15) {
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(contact)
-                                .font(.headline)
-                            Text("@\(contact.replacingOccurrences(of: " ", with: "").lowercased())")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                    Button(action: {
+                        selectedContact = contact
+                    }) {
+                        HStack(spacing: 15) {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(contact)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                Text("@\(contact.replacingOccurrences(of: " ", with: "").lowercased())")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
                     }
-                    .padding(.vertical, 8)
                     .listRowSeparator(.hidden)
                 }
                 .listStyle(.plain)
             }
         }
+        .sheet(item: Binding<IdentifiableString?>(
+            get: { selectedContact.map { IdentifiableString(string: $0) } },
+            set: { selectedContact = $0?.string }
+        )) { contactWrapper in
+            VStack {
+                Text("Placeholder for")
+                Text(contactWrapper.string)
+                    .font(.headline)
+                Button("Dismiss") {
+                    selectedContact = nil
+                }
+                .padding()
+            }
+        }
     }
+}
+
+struct IdentifiableString: Identifiable {
+    let id = UUID()
+    let string: String
 }
 
 #Preview {
