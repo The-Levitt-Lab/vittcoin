@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct VittcoinApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var authService = AuthService.shared
     @State private var showSplash = true
     
     var body: some Scene {
@@ -16,7 +18,11 @@ struct VittcoinApp: App {
             if showSplash {
                 SplashView(isActive: $showSplash)
             } else {
-                MainTabView()
+                if authService.isAuthenticated {
+                    MainTabView()
+                } else {
+                    LoginView()
+                }
             }
         }
     }

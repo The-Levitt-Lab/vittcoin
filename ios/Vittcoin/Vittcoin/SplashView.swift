@@ -16,7 +16,7 @@ struct SplashView: View {
         ZStack {
             // Background gradient
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.8)]),
+                gradient: Gradient(colors: [Color.vittPrimary, Color.vittSecondary]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -46,10 +46,10 @@ struct SplashView: View {
                 opacity = 1.0
             }
             
-            // Transition to main app after 1.5 seconds
+            // Transition to main app or login after 1.5 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 withAnimation {
-                    isActive = true
+                    isActive = false // Just finish splash, App logic decides view
                 }
             }
         }
@@ -57,6 +57,5 @@ struct SplashView: View {
 }
 
 #Preview {
-    SplashView(isActive: .constant(false))
+    SplashView(isActive: .constant(true))
 }
-
