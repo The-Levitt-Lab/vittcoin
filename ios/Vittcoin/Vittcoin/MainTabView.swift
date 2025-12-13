@@ -32,16 +32,16 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Challenges", systemImage: "medal.fill")
                 }
-            
-            LeaderboardView()
-                .tabItem {
-                    Label("Leaderboard", systemImage: "list.number")
-                }
-            
+                        
             if isAdmin {
-                AdminView()
+                MoreView()
                     .tabItem {
-                        Label("Admin", systemImage: "gear.circle.fill")
+                        Label("More", systemImage: "ellipsis.circle.fill")
+                    }
+            } else {
+                LeaderboardView()
+                    .tabItem {
+                        Label("Leaderboard", systemImage: "list.number")
                     }
             }
         }
@@ -51,4 +51,3 @@ struct MainTabView: View {
 #Preview {
     MainTabView()
 }
-

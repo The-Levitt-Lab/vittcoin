@@ -1,10 +1,12 @@
 import Foundation
 import AuthenticationServices
 import Combine
+import PostHog
 
 enum AuthProvider: String, Sendable {
     case google
     case apple
+    case dev
 }
 
 struct LoginRequest: Encodable, Sendable {
@@ -22,10 +24,12 @@ struct LoginRequest: Encodable, Sendable {
 struct TokenResponse: Decodable, Sendable {
     let accessToken: String
     let tokenType: String
+    let user: User
     
     enum CodingKeys: String, CodingKey {
         case accessToken = "access_token"
         case tokenType = "token_type"
+        case user
     }
 }
 
@@ -37,6 +41,12 @@ class AuthService: ObservableObject {
     // Use localhost for simulator, but standard IP for physical device if needed
     // Update this to your machine's local IP if testing on physical device.
     private let baseURL = "http://127.0.0.1:8000/api/v1" 
+    
+    private let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
     
     init() {
         self.isAuthenticated = KeychainService.shared.getAccessToken() != nil
@@ -73,11 +83,28 @@ class AuthService: ObservableObject {
             print("📍 [AuthService] Server response: \(str)")
         }
         
-        let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
+        let tokenResponse = try decoder.decode(TokenResponse.self, from: data)
         let success = KeychainService.shared.saveAccessToken(tokenResponse.accessToken)
         
         if success {
             print("✅ [AuthService] Token saved to keychain, setting isAuthenticated = true")
+            
+            // Identify user in PostHog
+            let user = tokenResponse.user
+            var userProperties: [String: Any] = [
+                "email": user.email,
+                "role": user.role
+            ]
+            if let username = user.username {
+                userProperties["username"] = username
+            }
+            if let name = user.fullName {
+                userProperties["name"] = name
+            }
+            
+            PostHogSDK.shared.identify(String(user.id), userProperties: userProperties)
+            print("✅ [AuthService] Identified user \(user.id) in PostHog")
+            
             isAuthenticated = true
         } else {
             print("❌ [AuthService] Failed to save token to keychain")
@@ -89,4 +116,10 @@ class AuthService: ObservableObject {
         _ = KeychainService.shared.deleteAccessToken()
         isAuthenticated = false
     }
+    
+    #if DEBUG
+    func devLogin(email: String) async throws {
+        try await login(provider: .dev, idToken: email, fullName: nil)
+    }
+    #endif
 }

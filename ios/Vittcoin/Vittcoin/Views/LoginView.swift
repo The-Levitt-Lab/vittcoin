@@ -56,6 +56,26 @@ struct LoginView: View {
                     .padding(.horizontal, 40)
                 }
                 
+                #if DEBUG
+                Button(action: {
+                    Task {
+                        isLoading = true
+                        do {
+                            try await authService.devLogin(email: "benklosky@uchicago.edu")
+                            isLoading = false
+                        } catch {
+                            isLoading = false
+                            errorMessage = "Dev login failed: \(error.localizedDescription)"
+                        }
+                    }
+                }) {
+                    Text("Developer Login")
+                        .foregroundColor(.white)
+                        .underline()
+                }
+                .padding(.top, 20)
+                #endif
+                
                 if let error = errorMessage {
                     Text(error)
                         .foregroundColor(.red)
