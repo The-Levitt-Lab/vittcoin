@@ -125,6 +125,31 @@ class UserService: ObservableObject {
         
         return try decoder.decode([Transaction].self, from: data)
     }
+
+    func fetchAllTransactions() async throws -> [Transaction] {
+        guard let url = URL(string: "\(baseURL)/admin/transactions") else {
+            throw NSError(domain: "Invalid URL", code: 0)
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        if let token = KeychainService.shared.getAccessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "Invalid Response", code: 0)
+        }
+        
+        if httpResponse.statusCode != 200 {
+            throw NSError(domain: "Server Error", code: httpResponse.statusCode)
+        }
+        
+        return try decoder.decode([Transaction].self, from: data)
+    }
     
     func addBalance(userId: Int, amount: Int) async throws -> User {
         return try await updateBalance(userId: userId, amount: amount, operation: "add")
