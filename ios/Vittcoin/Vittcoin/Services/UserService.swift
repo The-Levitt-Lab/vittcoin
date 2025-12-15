@@ -23,10 +23,14 @@ struct Transaction: Identifiable, Decodable, Hashable {
     let type: String
     let description: String?
     let createdAt: Date
+    let userName: String?
+    let recipientName: String?
     
     enum CodingKeys: String, CodingKey {
         case id, amount, type, description
         case createdAt = "created_at"
+        case userName = "user_name"
+        case recipientName = "recipient_name"
     }
     
     var isPositive: Bool {
@@ -43,7 +47,7 @@ class UserService: ObservableObject {
     static let shared = UserService()
     
     // Using the same base URL as AuthService
-    private let baseURL = "http://127.0.0.1:8000/api/v1"
+    private let baseURL = "https://api.thelevittlab.com/api/v1"
     
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()

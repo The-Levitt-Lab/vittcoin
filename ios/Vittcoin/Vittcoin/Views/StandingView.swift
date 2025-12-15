@@ -207,12 +207,38 @@ struct TransactionRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(transaction.description ?? transaction.type.capitalized)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                if let userName = transaction.userName {
+                    // Name is the headline
+                    if let recipientName = transaction.recipientName {
+                        HStack(spacing: 4) {
+                            Text(userName)
+                                .fontWeight(.medium)
+                            Image(systemName: "arrow.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(recipientName)
+                                .fontWeight(.medium)
+                        }
+                        .font(.subheadline)
+                    } else {
+                        Text(userName)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    
+                    // Description is subtext
+                    Text(transaction.description ?? transaction.type.capitalized)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    // Description is headline (Fallback for when names are missing)
+                    Text(transaction.description ?? transaction.type.capitalized)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
                 
                 Text(transaction.createdAt, style: .relative)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
             }
             

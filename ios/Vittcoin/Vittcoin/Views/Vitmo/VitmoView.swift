@@ -12,6 +12,9 @@ struct VitmoView: View {
     @State private var recipient: String = ""
     @State private var users: [User] = []
     @State private var selectedUser: User?
+    @State private var requests: [Request] = []
+    @State private var showRequests = false
+    @State private var currentUser: User?
     
     var filteredUsers: [User] {
         if recipient.isEmpty {
@@ -41,23 +44,28 @@ struct VitmoView: View {
                 // User Name in upper left
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Ben Klosky")
+                        Text(currentUser?.fullName ?? "Loading...")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
-                        Text("@ben.klosky")
+                        Text(currentUser?.username ?? "")
                             .font(.system(size: 16))
                             .foregroundColor(.white.opacity(0.9))
                     }
                     Spacer()
+                    
+                    RequestsButtonView(requestsCount: requests.filter { $0.status == "pending" && $0.recipientId == currentUser?.id }.count) {
+                        showRequests = true
+                    }
                 }
                 .padding(.leading, 20)
+                .padding(.trailing, 20)
                 .padding(.top, 10) // Adjust for safe area
                 
                 Spacer()
                     .frame(height: 100)
                                 
                 VStack(alignment: .leading, spacing: 10) {
-                    TextField("@username", text: $recipient)
+                    TextField("username", text: $recipient)
                     .padding()
                     .background(Color.white)
                     .clipShape(Capsule())
@@ -104,11 +112,22 @@ struct VitmoView: View {
         .sheet(item: $selectedUser) { user in
             TransactionModalView(user: user, selectedUser: $selectedUser)
         }
+        .sheet(isPresented: $showRequests) {
+            RequestsListView(requests: requests, currentUserId: currentUser?.id, isPresented: $showRequests)
+        }
         .task {
             do {
-                users = try await UserService.shared.fetchUsers()
+                async let fetchedUsers = UserService.shared.fetchUsers()
+                async let fetchedRequests = RequestService.shared.fetchRequests()
+                async let fetchedMe = UserService.shared.fetchCurrentUser()
+                
+                let (usersResult, requestsResult, meResult) = try await (fetchedUsers, fetchedRequests, fetchedMe)
+                
+                users = usersResult
+                requests = requestsResult
+                currentUser = meResult
             } catch {
-                print("Error fetching users: \(error)")
+                print("Error fetching data: \(error)")
             }
         }
     }

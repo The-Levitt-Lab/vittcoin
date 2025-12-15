@@ -38,9 +38,8 @@ class AuthService: ObservableObject {
     static let shared = AuthService()
     
     @Published var isAuthenticated: Bool = false
-    // Use localhost for simulator, but standard IP for physical device if needed
-    // Update this to your machine's local IP if testing on physical device.
-    private let baseURL = "http://127.0.0.1:8000/api/v1" 
+    // Use production URL for both dev and prod as requested
+    private let baseURL = "https://api.thelevittlab.com/api/v1" 
     
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
