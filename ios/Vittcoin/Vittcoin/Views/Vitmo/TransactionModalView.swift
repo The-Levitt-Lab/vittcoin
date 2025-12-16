@@ -52,8 +52,21 @@ struct TransactionModalView: View {
                 
                 HStack(spacing: 12) {
                     Button(action: {
-                        // Request logic
-                        selectedUser = nil
+                        Task {
+                            let amountInt = Int(amount) ?? 0
+                            if amountInt > 0 {
+                                do {
+                                    _ = try await RequestService.shared.createRequest(
+                                        amount: amountInt,
+                                        description: memo.isEmpty ? nil : memo,
+                                        recipientId: user.id
+                                    )
+                                    selectedUser = nil
+                                } catch {
+                                    print("Error creating request: \(error)")
+                                }
+                            }
+                        }
                     }) {
                         Text("Request")
                             .font(.headline)
@@ -69,8 +82,21 @@ struct TransactionModalView: View {
                     }
                     
                     Button(action: {
-                        // Pay logic
-                        selectedUser = nil
+                        Task {
+                            let amountInt = Int(amount) ?? 0
+                            if amountInt > 0 {
+                                do {
+                                    _ = try await UserService.shared.sendPayment(
+                                        amount: amountInt,
+                                        description: memo.isEmpty ? nil : memo,
+                                        recipientId: user.id
+                                    )
+                                    selectedUser = nil
+                                } catch {
+                                    print("Error sending payment: \(error)")
+                                }
+                            }
+                        }
                     }) {
                         Text("Pay")
                             .font(.headline)

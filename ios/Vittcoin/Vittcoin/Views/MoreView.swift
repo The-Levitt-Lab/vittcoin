@@ -28,10 +28,9 @@ struct MoreView: View {
                         Label("Transactions", systemImage: "list.bullet")
                     }
                 } header: {
-                    Text("Management")
+                    Text("Manage students")
                 }
             }
-            .navigationTitle("More")
             .listStyle(InsetGroupedListStyle())
         }
     }

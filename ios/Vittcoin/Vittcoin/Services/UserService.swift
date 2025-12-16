@@ -42,12 +42,15 @@ struct UserBalanceUpdate: Encodable {
     let amount: Int
 }
 
+struct TransferBody: Encodable {
+    let recipient_id: Int
+    let amount: Int
+    let description: String?
+}
+
 @MainActor
 class UserService: ObservableObject {
     static let shared = UserService()
-    
-    // Using the same base URL as AuthService
-    private let baseURL = "https://api.thelevittlab.com/api/v1"
     
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
@@ -56,7 +59,7 @@ class UserService: ObservableObject {
     }()
     
     func fetchUsers() async throws -> [User] {
-        guard let url = URL(string: "\(baseURL)/users/") else {
+        guard let url = URL(string: "\(Config.baseURL)/users/") else {
             throw NSError(domain: "Invalid URL", code: 0)
         }
         
@@ -81,7 +84,7 @@ class UserService: ObservableObject {
     }
     
     func fetchCurrentUser() async throws -> User {
-        guard let url = URL(string: "\(baseURL)/users/me") else {
+        guard let url = URL(string: "\(Config.baseURL)/users/me") else {
             throw NSError(domain: "Invalid URL", code: 0)
         }
         
@@ -106,7 +109,7 @@ class UserService: ObservableObject {
     }
     
     func fetchTransactions() async throws -> [Transaction] {
-        guard let url = URL(string: "\(baseURL)/users/me/transactions") else {
+        guard let url = URL(string: "\(Config.baseURL)/users/me/transactions") else {
             throw NSError(domain: "Invalid URL", code: 0)
         }
         
@@ -131,7 +134,7 @@ class UserService: ObservableObject {
     }
 
     func fetchAllTransactions() async throws -> [Transaction] {
-        guard let url = URL(string: "\(baseURL)/admin/transactions") else {
+        guard let url = URL(string: "\(Config.baseURL)/admin/transactions") else {
             throw NSError(domain: "Invalid URL", code: 0)
         }
         
@@ -155,6 +158,39 @@ class UserService: ObservableObject {
         return try decoder.decode([Transaction].self, from: data)
     }
     
+    func sendPayment(amount: Int, description: String?, recipientId: Int) async throws -> Transaction {
+        guard let url = URL(string: "\(Config.baseURL)/transactions/transfer") else {
+            throw NSError(domain: "Invalid URL", code: 0)
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = KeychainService.shared.getAccessToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let body = TransferBody(recipient_id: recipientId, amount: amount, description: description)
+        request.httpBody = try JSONEncoder().encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "Invalid Response", code: 0)
+        }
+        
+        if httpResponse.statusCode != 200 {
+             if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let detail = errorJson["detail"] as? String {
+                 throw NSError(domain: detail, code: httpResponse.statusCode)
+             }
+            throw NSError(domain: "Server Error: \(httpResponse.statusCode)", code: httpResponse.statusCode)
+        }
+        
+        return try decoder.decode(Transaction.self, from: data)
+    }
+
     func addBalance(userId: Int, amount: Int) async throws -> User {
         return try await updateBalance(userId: userId, amount: amount, operation: "add")
     }
@@ -164,7 +200,7 @@ class UserService: ObservableObject {
     }
     
     private func updateBalance(userId: Int, amount: Int, operation: String) async throws -> User {
-        guard let url = URL(string: "\(baseURL)/admin/users/\(userId)/balance/\(operation)") else {
+        guard let url = URL(string: "\(Config.baseURL)/admin/users/\(userId)/balance/\(operation)") else {
             throw NSError(domain: "Invalid URL", code: 0)
         }
         

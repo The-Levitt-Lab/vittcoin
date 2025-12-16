@@ -53,7 +53,7 @@ struct VitmoView: View {
                     }
                     Spacer()
                     
-                    RequestsButtonView(requestsCount: requests.filter { $0.status == "pending" && $0.recipientId == currentUser?.id }.count) {
+                    RequestsButtonView(requestsCount: requests.filter { $0.status == "pending" && $0.recipientId == currentUser?.id && ($0.isActive ?? true) }.count) {
                         showRequests = true
                     }
                 }
@@ -94,7 +94,7 @@ struct VitmoView: View {
                                     .font(.headline)
                                     .foregroundColor(.primary)
                                 if let username = user.username {
-                                    Text("@\(username)")
+                                    Text(username)
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }

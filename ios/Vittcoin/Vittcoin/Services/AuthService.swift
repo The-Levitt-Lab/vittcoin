@@ -38,8 +38,6 @@ class AuthService: ObservableObject {
     static let shared = AuthService()
     
     @Published var isAuthenticated: Bool = false
-    // Use production URL for both dev and prod as requested
-    private let baseURL = "https://api.thelevittlab.com/api/v1" 
     
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
@@ -54,8 +52,8 @@ class AuthService: ObservableObject {
     func login(provider: AuthProvider, idToken: String, fullName: String? = nil) async throws {
         print("📍 [AuthService] login called - provider: \(provider.rawValue)")
         
-        guard let url = URL(string: "\(baseURL)/auth/login") else {
-            print("❌ [AuthService] Invalid URL: \(baseURL)/auth/login")
+        guard let url = URL(string: "\(Config.baseURL)/auth/login") else {
+            print("❌ [AuthService] Invalid URL: \(Config.baseURL)/auth/login")
             throw NSError(domain: "Invalid URL", code: 0)
         }
         
