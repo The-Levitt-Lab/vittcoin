@@ -7,11 +7,13 @@ struct User: Identifiable, Decodable, Hashable {
     let fullName: String?
     let username: String?
     var balance: Int
+    var giftBalance: Int
     let role: String
     let createdAt: Date
     
     enum CodingKeys: String, CodingKey {
         case id, email, balance, role, username
+        case giftBalance = "gift_balance"
         case fullName = "full_name"
         case createdAt = "created_at"
     }
@@ -46,6 +48,7 @@ struct TransferBody: Encodable {
     let recipient_id: Int
     let amount: Int
     let description: String?
+    let use_gift_balance: Bool
 }
 
 @MainActor
@@ -158,7 +161,7 @@ class UserService: ObservableObject {
         return try decoder.decode([Transaction].self, from: data)
     }
     
-    func sendPayment(amount: Int, description: String?, recipientId: Int) async throws -> Transaction {
+    func sendPayment(amount: Int, description: String?, recipientId: Int, useGiftBalance: Bool = false) async throws -> Transaction {
         guard let url = URL(string: "\(Config.baseURL)/transactions/transfer") else {
             throw NSError(domain: "Invalid URL", code: 0)
         }
@@ -171,7 +174,7 @@ class UserService: ObservableObject {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let body = TransferBody(recipient_id: recipientId, amount: amount, description: description)
+        let body = TransferBody(recipient_id: recipientId, amount: amount, description: description, use_gift_balance: useGiftBalance)
         request.httpBody = try JSONEncoder().encode(body)
         
         let (data, response) = try await URLSession.shared.data(for: request)

@@ -17,10 +17,12 @@ struct VitmoView: View {
     @State private var currentUser: User?
     
     var filteredUsers: [User] {
+        let availableUsers = users.filter { $0.id != currentUser?.id }
+        
         if recipient.isEmpty {
-            return users
+            return availableUsers
         }
-        return users.filter { user in
+        return availableUsers.filter { user in
             let query = recipient.lowercased()
             let nameMatch = user.fullName?.lowercased().contains(query) ?? false
             let usernameMatch = user.username?.lowercased().contains(query) ?? false
@@ -110,7 +112,7 @@ struct VitmoView: View {
             }
         }
         .sheet(item: $selectedUser) { user in
-            TransactionModalView(user: user, selectedUser: $selectedUser)
+            TransactionModalView(user: user, selectedUser: $selectedUser, currentUser: currentUser)
         }
         .sheet(isPresented: $showRequests) {
             RequestsListView(requests: requests, currentUserId: currentUser?.id, isPresented: $showRequests)

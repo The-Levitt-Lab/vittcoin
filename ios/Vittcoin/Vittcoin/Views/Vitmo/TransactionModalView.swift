@@ -3,8 +3,11 @@ import SwiftUI
 struct TransactionModalView: View {
     let user: User
     @Binding var selectedUser: User?
+    let currentUser: User?
     @State private var amount: String = "0"
     @State private var memo: String = ""
+    @State private var showPaymentOptions = false
+    @State private var useGiftBalance = false
     
     var body: some View {
         VStack(spacing: 30) {
@@ -50,55 +53,98 @@ struct TransactionModalView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
                 
-                HStack(spacing: 12) {
-                    Button(action: {
-                        Task {
-                            let amountInt = Int(amount) ?? 0
-                            if amountInt > 0 {
-                                do {
-                                    _ = try await RequestService.shared.createRequest(
-                                        amount: amountInt,
-                                        description: memo.isEmpty ? nil : memo,
-                                        recipientId: user.id
-                                    )
-                                    selectedUser = nil
-                                } catch {
-                                    print("Error creating request: \(error)")
+                if showPaymentOptions {
+                    Menu {
+                        Button(action: { useGiftBalance = false }) {
+                            Label("Main Balance", systemImage: "creditcard")
+                        }
+                        Button(action: { useGiftBalance = true }) {
+                            Label("Gift Balance", systemImage: "gift")
+                        }
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(useGiftBalance ? "Gift Balance" : "Main Balance")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                if let currentUser = currentUser {
+                                    Text("\(useGiftBalance ? currentUser.giftBalance : currentUser.balance) vtc")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
                                 }
                             }
+                            Spacer()
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(.gray)
                         }
-                    }) {
-                        Text("Request")
-                            .font(.headline)
-                            .foregroundColor(.vittPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.vittPrimary, lineWidth: 1)
-                            )
-                            .cornerRadius(12)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.horizontal)
+                }
+                
+                HStack(spacing: 12) {
+                    if !showPaymentOptions {
+                        Button(action: {
+                            Task {
+                                let amountInt = Int(amount) ?? 0
+                                if amountInt > 0 {
+                                    do {
+                                        _ = try await RequestService.shared.createRequest(
+                                            amount: amountInt,
+                                            description: memo.isEmpty ? nil : memo,
+                                            recipientId: user.id
+                                        )
+                                        selectedUser = nil
+                                    } catch {
+                                        print("Error creating request: \(error)")
+                                    }
+                                }
+                            }
+                        }) {
+                            Text("Request")
+                                .font(.headline)
+                                .foregroundColor(.vittPrimary)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.vittPrimary, lineWidth: 1)
+                                )
+                                .cornerRadius(12)
+                        }
+                        .transition(.move(edge: .leading).combined(with: .opacity))
                     }
                     
                     Button(action: {
-                        Task {
-                            let amountInt = Int(amount) ?? 0
-                            if amountInt > 0 {
-                                do {
-                                    _ = try await UserService.shared.sendPayment(
-                                        amount: amountInt,
-                                        description: memo.isEmpty ? nil : memo,
-                                        recipientId: user.id
-                                    )
-                                    selectedUser = nil
-                                } catch {
-                                    print("Error sending payment: \(error)")
+                        if !showPaymentOptions {
+                            withAnimation {
+                                showPaymentOptions = true
+                            }
+                        } else {
+                            Task {
+                                let amountInt = Int(amount) ?? 0
+                                if amountInt > 0 {
+                                    do {
+                                        _ = try await UserService.shared.sendPayment(
+                                            amount: amountInt,
+                                            description: memo.isEmpty ? nil : memo,
+                                            recipientId: user.id,
+                                            useGiftBalance: useGiftBalance
+                                        )
+                                        selectedUser = nil
+                                    } catch {
+                                        print("Error sending payment: \(error)")
+                                    }
                                 }
                             }
                         }
                     }) {
-                        Text("Pay")
+                        Text(showPaymentOptions ? "Confirm Pay" : "Pay")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
